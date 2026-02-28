@@ -85,6 +85,10 @@ body {
   overflow-x: auto;
 }
 
+.filter-tabs .filter-tab-spacer {
+  flex: 1;
+}
+
 .filter-tab {
   background: transparent;
   border: none;
@@ -104,6 +108,23 @@ body {
 .filter-tab.active {
   background: #0d47a1;
   color: #e8eaed;
+}
+
+.filter-tab-cookies {
+  background: #1e3a5f;
+  color: #64b5f6;
+  border: 1px solid #1976d2;
+  font-weight: 600;
+}
+
+.filter-tab-cookies:hover {
+  background: #1565c0;
+  color: #90caf9;
+}
+
+.filter-tab-cookies.active {
+  background: #1976d2;
+  color: #ffffff;
 }
 
 .search-bar {
@@ -253,6 +274,11 @@ body {
 .col-size {
   width: 70px;
   text-align: right;
+}
+
+.col-value {
+  flex: 1;
+  min-width: 100px;
 }
 
 .requests-list {
@@ -426,4 +452,125 @@ body {
   border-top: 1px solid #1a1a1a;
   display: flex;
   justify-content: flex-end;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.cookie-section {
+  height: calc(100vh - 134px);
+  display: flex;
+  flex-direction: column;
+}
+
+.cookie-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  background: #302e2e;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.cookie-toolbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.cookie-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cookie-count {
+  color: #9aa0a6;
+  font-size: 11px;
+}
+
+.cookie-list {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.cookie-list::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.cookie-list::-webkit-scrollbar-track {
+  background: #242424;
+}
+
+.cookie-list::-webkit-scrollbar-thumb {
+  background: #5f6368;
+  border-radius: 4px;
+}
+
+.cookie-list::-webkit-scrollbar-thumb:hover {
+  background: #72767b;
+}
+
+.cookie-row {
+  display: flex;
+  padding: 6px 8px;
+  border-bottom: 1px solid #2d2d2d;
+  font-size: 11px;
+  align-items: center;
+}
+
+.cookie-row:hover {
+  background: #2a2d2e;
+}
+
+.cookie-name {
+  flex: 1;
+  min-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+
+.cookie-name-recommended {
+  color: #81c784;
+}
+
+.cookie-name-tracking {
+  color: #e57373;
+}
+
+.cookie-value {
+  flex: 1;
+  min-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #9aa0a6;
+}
+
+.cookie-badge {
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-weight: 600;
+}
+
+.cookie-badge.recommended {
+  background: #1b5e20;
+  color: #81c784;
+}
+
+.cookie-badge.tracking {
+  background: #b71c1c;
+  color: #e57373;
+}
+
+.empty-message {
+  color: #5f6368;
+  padding: 20px;
+  text-align: center;
 }

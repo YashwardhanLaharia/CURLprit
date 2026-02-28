@@ -35,6 +35,8 @@
     <button class="filter-tab" data-filter="xhr">XHR</button>
     <button class="filter-tab" data-filter="font">Font</button>
     <button class="filter-tab" data-filter="other">Other</button>
+    <div class="filter-tab-spacer"></div>
+    <button class="filter-tab filter-tab-cookies" data-filter="cookies">Cookies</button>
   </div>
 
   <div class="search-bar">
@@ -61,6 +63,25 @@
   </div>
 
   <div id="requestsList" class="requests-list"></div>
+
+  <div id="cookieSection" class="cookie-section hidden">
+    <div class="cookie-toolbar">
+      <div class="cookie-toolbar-left">
+        <span id="cookieCount" class="cookie-count">0 cookies</span>
+      </div>
+      <div class="cookie-toolbar-right">
+        <button id="selectAllCookies" class="toolbar-btn" title="Select All">Select All</button>
+        <button id="deselectAllCookies" class="toolbar-btn" title="Deselect All">Deselect All</button>
+        <button id="refreshCookies" class="toolbar-btn" title="Refresh Cookies">↻</button>
+      </div>
+    </div>
+    <div class="header-row cookie-header hidden">
+      <div class="col-checkbox"></div>
+      <div class="col-name">Name</div>
+      <div class="col-value">Value</div>
+    </div>
+    <div id="cookieList" class="cookie-list"></div>
+  </div>
 
   <div id="curlModal" class="modal hidden">
     <div class="modal-content">

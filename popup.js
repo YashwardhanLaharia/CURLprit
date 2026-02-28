@@ -1,4 +1,5 @@
 let currentTabId = null;
+let currentTabUrl = null;
 let requests = [];
 let isRecording = false;
 let currentFilter = "all";
@@ -8,6 +9,9 @@ let fileExtension = "";
 let filePrefix = "";
 let startNumber = 1;
 let fileCounter = 1;
+
+let cookies = [];
+let selectedCookies = new Set();
 
 const elements = {
   requestsList: document.getElementById("requestsList"),
@@ -28,6 +32,14 @@ const elements = {
   closeModal: document.getElementById("closeModal"),
   curlOutput: document.getElementById("curlOutput"),
   copyCurl: document.getElementById("copyCurl"),
+  cookieSection: document.getElementById("cookieSection"),
+  cookieList: document.getElementById("cookieList"),
+  cookieCount: document.getElementById("cookieCount"),
+  selectAllCookies: document.getElementById("selectAllCookies"),
+  deselectAllCookies: document.getElementById("deselectAllCookies"),
+  refreshCookies: document.getElementById("refreshCookies"),
+  requestsHeaderRow: document.querySelector(".header-row"),
+  cookieHeaderRow: document.querySelector(".cookie-header"),
 };
 
 const filterCategories = {
@@ -53,6 +65,137 @@ const filterCategories = {
   font: ["font", "woff", "woff2", "ttf", "otf", "eot"],
 };
 
+const essentialCookiePatterns = [
+  "session",
+  "token",
+  "auth",
+  "jwt",
+  "login",
+  "user",
+  "id",
+  "cf_clearance",
+  "__cf_bm",
+  "__cf",
+  "cloudflare",
+  "php",
+  "laravel",
+  "django",
+  "rails",
+  "express",
+  "asp",
+  "java",
+  "dotnet",
+  "node",
+  "student",
+  "course",
+  "member",
+  "premium",
+  "remember",
+  "access",
+  "refresh",
+  "csrf",
+  "xsrf",
+  "sb",
+  "fbp",
+  "wl",
+  "linkedin",
+  "Optanon",
+  "oneTrust",
+  "consent",
+  " EBSESSIONID",
+  "JSESSIONID",
+  "ASPSESSIONID",
+];
+
+const trackingCookiePatterns = [
+  "_ga",
+  "_gid",
+  "_gat",
+  "_gat_",
+  "_gac",
+  "__gads",
+  "_gcl",
+  "_fbp",
+  "_fbc",
+  "fr",
+  "tr",
+  "ads",
+  "advert",
+  "tracking",
+  "pixel",
+  "beacon",
+  "doubleclick",
+  "pubmatic",
+  "openx",
+  "rubicon",
+  "analytics",
+  "mixpanel",
+  "segment",
+  "hotjar",
+  "optimizely",
+  "branch",
+  "appsflyer",
+  "adjust",
+  "mqtt",
+  "pusher",
+  "socket",
+  "lang",
+  "locale",
+  "timezone",
+  "gdpr",
+  "ccpa",
+  "notice",
+  "popup",
+  "scroll",
+  "visited",
+  "theme",
+  "color",
+  "size",
+  "width",
+  "height",
+  "_delighted",
+  "hrt",
+  "fst",
+  "sd_",
+  "seg",
+  "distinct",
+  "fdisi",
+  "frit",
+  "studocu_ga",
+  "kirby",
+];
+
+function isEssentialCookie(name) {
+  const lowerName = name.toLowerCase();
+  for (const pattern of essentialCookiePatterns) {
+    if (lowerName.includes(pattern.toLowerCase())) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isTrackingCookie(name) {
+  const lowerName = name.toLowerCase();
+  for (const pattern of trackingCookiePatterns) {
+    if (lowerName.startsWith(pattern.toLowerCase())) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isRecommendedCookie(name) {
+  if (isEssentialCookie(name)) return true;
+  if (isTrackingCookie(name)) return false;
+  if (name.toLowerCase().includes("session")) return true;
+  if (name.startsWith("__cf")) return true;
+  if (name.startsWith("Optanon")) return true;
+  if (name.toLowerCase().includes("remember")) return true;
+  if (name.toLowerCase().includes("xsrf") || name.toLowerCase().includes("csrf")) return true;
+  return true;
+}
+
 async function init() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   if (
@@ -65,6 +208,7 @@ async function init() {
   }
 
   currentTabId = tab.id;
+  currentTabUrl = tab.url;
 
   const response = await chrome.runtime.sendMessage({
     type: "getRecordingState",
@@ -78,6 +222,7 @@ async function init() {
   }
 
   loadRequests();
+  loadCookies();
 
   setInterval(loadRequests, 500);
 
@@ -96,6 +241,12 @@ function setupEventListeners() {
   );
   elements.closeModal.addEventListener("click", closeModal);
   elements.copyCurl.addEventListener("click", copyCurlToClipboard);
+
+  elements.selectAllCookies.addEventListener("click", selectAllCookiesFn);
+  elements.deselectAllCookies.addEventListener("click", deselectAllCookiesFn);
+  elements.refreshCookies.addEventListener("click", () => {
+    loadCookies();
+  });
 
   elements.searchInput.addEventListener("input", (e) => {
     searchQuery = e.target.value;
@@ -127,7 +278,19 @@ function setupEventListeners() {
       currentFilter = tab.dataset.filter;
       selectedRequests.clear();
       elements.selectAllCheckbox.checked = false;
-      renderRequests();
+      
+      if (currentFilter === "cookies") {
+        elements.requestsList.classList.add("hidden");
+        elements.cookieSection.classList.remove("hidden");
+        elements.requestsHeaderRow.classList.add("hidden");
+        elements.cookieHeaderRow.classList.remove("hidden");
+      } else {
+        elements.requestsList.classList.remove("hidden");
+        elements.cookieSection.classList.add("hidden");
+        elements.requestsHeaderRow.classList.remove("hidden");
+        elements.cookieHeaderRow.classList.add("hidden");
+        renderRequests();
+      }
     });
   });
 }
@@ -159,6 +322,102 @@ async function loadRequests() {
   } catch (err) {
     console.error("Error loading requests:", err);
   }
+}
+
+async function loadCookies() {
+  if (!currentTabUrl) return;
+
+  try {
+    const urlObj = new URL(currentTabUrl);
+    const hostname = urlObj.hostname;
+
+    const domainCookies = await chrome.cookies.getAll({ domain: hostname });
+    cookies = domainCookies;
+    
+    selectedCookies.clear();
+    cookies.forEach((cookie, index) => {
+      if (isRecommendedCookie(cookie.name)) {
+        selectedCookies.add(index);
+      }
+    });
+
+    renderCookies();
+  } catch (err) {
+    console.error("Error loading cookies:", err);
+  }
+}
+
+function renderCookies() {
+  elements.cookieList.innerHTML = "";
+
+  const count = cookies.length;
+  const selectedCount = selectedCookies.size;
+  elements.cookieCount.textContent = `${selectedCount} of ${count} selected`;
+
+  if (count === 0) {
+    elements.cookieList.innerHTML = '<div class="empty-message">No cookies found for this page</div>';
+    return;
+  }
+
+  cookies.forEach((cookie, index) => {
+    const row = document.createElement("div");
+    row.className = "cookie-row";
+
+    const isSelected = selectedCookies.has(index);
+    const isRecommended = isRecommendedCookie(cookie.name);
+    const isTracking = isTrackingCookie(cookie.name);
+
+    let nameClass = "cookie-name";
+    if (isTracking) {
+      nameClass += " cookie-name-tracking";
+    } else if (isRecommended) {
+      nameClass += " cookie-name-recommended";
+    }
+
+    row.innerHTML = `
+      <div class="col-checkbox">
+        <input type="checkbox" class="cookie-checkbox" data-index="${index}" ${isSelected ? "checked" : ""}>
+      </div>
+      <div class="${nameClass}" title="${escapeHtml(cookie.name)}">
+        ${escapeHtml(cookie.name)}
+      </div>
+      <div class="cookie-value" title="${escapeHtml(cookie.value)}">
+        ${escapeHtml(cookie.value.length > 50 ? cookie.value.substring(0, 50) + "..." : cookie.value)}
+      </div>
+    `;
+
+    const checkbox = row.querySelector(".cookie-checkbox");
+    checkbox.addEventListener("change", (e) => {
+      if (e.target.checked) {
+        selectedCookies.add(index);
+      } else {
+        selectedCookies.delete(index);
+      }
+      updateCookieCount();
+    });
+
+    elements.cookieList.appendChild(row);
+  });
+
+  updateCookieCount();
+}
+
+function updateCookieCount() {
+  const count = cookies.length;
+  const selectedCount = selectedCookies.size;
+  elements.cookieCount.textContent = `${selectedCount} of ${count} selected`;
+}
+
+function selectAllCookiesFn() {
+  cookies.forEach((_, index) => {
+    selectedCookies.add(index);
+  });
+  renderCookies();
+}
+
+function deselectAllCookiesFn() {
+  selectedCookies.clear();
+  renderCookies();
 }
 
 function filterRequest(req) {
@@ -316,11 +575,11 @@ async function generateCurlCommands() {
     return;
   }
 
+  const cookieString = getSelectedCookiesString();
   const curlCommandsList = [];
 
   for (const req of selectedReqs) {
-    const cookies = await getCookiesForUrl(req.url);
-    const cmd = generateCurlForRequest(req, cookies);
+    const cmd = generateCurlForRequest(req, cookieString);
     curlCommandsList.push(cmd);
   }
 
@@ -328,6 +587,19 @@ async function generateCurlCommands() {
 
   elements.curlOutput.value = curlCommands;
   elements.curlModal.classList.remove("hidden");
+}
+
+function getSelectedCookiesString() {
+  if (selectedCookies.size === 0) return "";
+  
+  const selectedCookieList = [];
+  selectedCookies.forEach((index) => {
+    if (cookies[index]) {
+      selectedCookieList.push(`${cookies[index].name}=${cookies[index].value}`);
+    }
+  });
+  
+  return selectedCookieList.join("; ");
 }
 
 async function getCookiesForUrl(url) {
