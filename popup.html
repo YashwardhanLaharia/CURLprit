@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CURLprit</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <img src="icons/full_logo.svg" alt="CURLprit" class="header-logo">
+      <button id="startBtn" class="toolbar-btn" title="Start Recording">▶ Start</button>
+      <button id="stopBtn" class="toolbar-btn" title="Stop Recording" disabled>⏹ Stop</button>
+      <button id="refreshBtn" class="toolbar-btn" title="Refresh Page">↻ Refresh</button>
+      <button id="clearBtn" class="toolbar-btn" title="Clear Requests">Clear</button>
+      <div class="toolbar-separator"></div>
+      <button id="getCurlBtn" class="toolbar-btn primary" title="Get Curl" disabled>Get Curl</button>
+    </div>
+    <div class="toolbar-right">
+      <span id="requestCount" class="request-count">0 requests</span>
+    </div>
+  </div>
+  
+  <div class="filter-tabs">
+    <button class="filter-tab active" data-filter="all">All</button>
+    <button class="filter-tab" data-filter="img">Images</button>
+    <button class="filter-tab" data-filter="video">Video</button>
+    <button class="filter-tab" data-filter="pdf">PDF</button>
+    <button class="filter-tab" data-filter="doc">Doc</button>
+    <button class="filter-tab" data-filter="css">CSS</button>
+    <button class="filter-tab" data-filter="js">JS</button>
+    <button class="filter-tab" data-filter="xhr">XHR</button>
+    <button class="filter-tab" data-filter="font">Font</button>
+    <button class="filter-tab" data-filter="other">Other</button>
+  </div>
+  
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search (use * for wildcard)...">
+  </div>
+  
+  <div class="naming-bar">
+    <span class="naming-label">Ext:</span>
+    <input type="text" id="fileExtension" class="naming-input" placeholder="jpg">
+    <span class="naming-label">Prefix:</span>
+    <input type="text" id="filePrefix" class="naming-input" placeholder="image">
+    <span class="naming-label">Start #:</span>
+    <input type="number" id="startNumber" class="naming-input-small" value="1" min="1">
+    <button id="resetNaming" class="toolbar-btn" title="Reset Counter">↺</button>
+  </div>
+  
+  <div class="header-row">
+    <div class="col-checkbox">
+      <input type="checkbox" id="selectAllCheckbox" title="Select/Deselect All">
+    </div>
+    <div class="col-name">Name</div>
+    <div class="col-status">Status</div>
+    <div class="col-type">Type</div>
+    <div class="col-size">Size</div>
+    <div class="col-time">Time</div>
+  </div>
+  
+  <div id="requestsList" class="requests-list"></div>
+
+  <div id="curlModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>Curl Commands</span>
+        <button id="closeModal" class="close-btn">×</button>
+      </div>
+      <div class="modal-body">
+        <textarea id="curlOutput" readonly></textarea>
+      </div>
+      <div class="modal-footer">
+        <button id="copyCurl" class="toolbar-btn primary">Copy to Clipboard</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
