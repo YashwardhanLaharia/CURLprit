@@ -2,6 +2,9 @@
 
 A Chrome extension that captures network requests and generates curl commands for authenticated downloads.
 
+![alt text](icons/full_logo.svg)
+
+
 ## Overview
 
 CURLprit intercepts network requests from the active browser tab and converts them to executable curl commands. It preserves cookies and authentication headers, enabling bulk downloads of gated or authorized content directly from the terminal.
