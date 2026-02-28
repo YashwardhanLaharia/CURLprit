@@ -2,7 +2,7 @@
 
 A Chrome extension that captures network requests and generates curl commands for authenticated downloads.
 
-![alt text](icons/full_logo.svg)
+![logo](icons/full_logo.svg)
 
 
 ## Overview
