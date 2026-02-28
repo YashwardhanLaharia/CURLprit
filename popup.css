@@ -237,22 +237,12 @@ body {
   white-space: nowrap;
 }
 
-.col-status {
-  width: 55px;
-  text-align: center;
-}
-
 .col-type {
-  width: 70px;
+  width: 80px;
 }
 
 .col-size {
-  width: 65px;
-  text-align: right;
-}
-
-.col-time {
-  width: 60px;
+  width: 70px;
   text-align: right;
 }
 
@@ -321,25 +311,7 @@ body {
   white-space: nowrap;
 }
 
-.col-status {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.status {
-  padding: 1px 4px;
-  border-radius: 2px;
-  font-size: 10px;
-}
-
-.status-pending { color: #9aa0a6; }
-.status-success { color: #49cba3; }
-.status-redirect { color: #ff9800; }
-.status-client-error { color: #f44336; }
-.status-server-error { color: #f44336; }
-
-.col-type, .col-size, .col-time {
+.col-type, .col-size {
   display: flex;
   align-items: center;
   color: #9aa0a6;

@@ -209,10 +209,8 @@ function renderRequests() {
     const isSelected = selectedRequests.has(reqId);
     
     const name = getFileName(req.url);
-    const statusClass = getStatusClass(req.status);
     const type = req.type || 'other';
     const size = formatSize(req.size);
-    const time = req.time ? formatTime(req.time) : '-';
     
     row.innerHTML = `
       <div class="col-checkbox">
@@ -222,12 +220,8 @@ function renderRequests() {
         <span class="method method-${req.method.toLowerCase()}">${req.method}</span>
         <span class="name">${escapeHtml(name)}</span>
       </div>
-      <div class="col-status">
-        <span class="status ${statusClass}">${req.status || 'pending'}</span>
-      </div>
       <div class="col-type">${type}</div>
       <div class="col-size">${size}</div>
-      <div class="col-time">${time}</div>
     `;
     
     const checkbox = row.querySelector('.request-checkbox');
