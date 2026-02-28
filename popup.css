@@ -543,6 +543,10 @@ body {
   color: #e57373;
 }
 
+.cookie-name-large {
+  color: #ffb74d;
+}
+
 .cookie-value {
   flex: 1;
   min-width: 100px;

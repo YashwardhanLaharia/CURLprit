@@ -65,135 +65,105 @@ const filterCategories = {
   font: ["font", "woff", "woff2", "ttf", "otf", "eot"],
 };
 
-const essentialCookiePatterns = [
-  "session",
-  "token",
-  "auth",
-  "jwt",
-  "login",
-  "user",
-  "id",
-  "cf_clearance",
-  "__cf_bm",
-  "__cf",
-  "cloudflare",
-  "php",
-  "laravel",
-  "django",
-  "rails",
-  "express",
-  "asp",
-  "java",
-  "dotnet",
-  "node",
-  "student",
-  "course",
-  "member",
-  "premium",
-  "remember",
-  "access",
-  "refresh",
-  "csrf",
-  "xsrf",
-  "sb",
-  "fbp",
-  "wl",
-  "linkedin",
-  "Optanon",
-  "oneTrust",
-  "consent",
-  " EBSESSIONID",
-  "JSESSIONID",
-  "ASPSESSIONID",
-];
+const LARGE_COOKIE_THRESHOLD = 2048;
 
-const trackingCookiePatterns = [
-  "_ga",
-  "_gid",
-  "_gat",
-  "_gat_",
-  "_gac",
-  "__gads",
-  "_gcl",
-  "_fbp",
-  "_fbc",
-  "fr",
-  "tr",
-  "ads",
-  "advert",
-  "tracking",
-  "pixel",
-  "beacon",
-  "doubleclick",
-  "pubmatic",
-  "openx",
-  "rubicon",
-  "analytics",
-  "mixpanel",
-  "segment",
-  "hotjar",
-  "optimizely",
-  "branch",
-  "appsflyer",
-  "adjust",
-  "mqtt",
-  "pusher",
-  "socket",
-  "lang",
-  "locale",
-  "timezone",
-  "gdpr",
-  "ccpa",
-  "notice",
-  "popup",
-  "scroll",
-  "visited",
-  "theme",
-  "color",
-  "size",
-  "width",
-  "height",
-  "_delighted",
-  "hrt",
-  "fst",
-  "sd_",
-  "seg",
-  "distinct",
-  "fdisi",
-  "frit",
-  "studocu_ga",
-  "kirby",
-];
+const COOKIE_DB_KEY = "cookieDatabase";
+const COOKIE_DB_URL = "https://raw.githubusercontent.com/jkwakman/Open-Cookie-Database/master/open-cookie-database.csv";
+const COOKIE_DB_CACHE_DURATION = 24 * 60 * 60 * 1000;
 
-function isEssentialCookie(name) {
-  const lowerName = name.toLowerCase();
-  for (const pattern of essentialCookiePatterns) {
-    if (lowerName.includes(pattern.toLowerCase())) {
-      return true;
+let cookieCategoryMap = {};
+
+async function fetchCookieDatabase() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get(COOKIE_DB_KEY, async (result) => {
+      const now = Date.now();
+      let dbData = result[COOKIE_DB_KEY];
+      
+      const needsUpdate = !dbData || 
+        !dbData.lastUpdated || 
+        (now - dbData.lastUpdated) > COOKIE_DB_CACHE_DURATION;
+      
+      if (needsUpdate) {
+        try {
+          const response = await fetch(COOKIE_DB_URL);
+          if (response.ok) {
+            const csvText = await response.text();
+            dbData = parseCookieDatabase(csvText, now);
+            chrome.storage.local.set({ [COOKIE_DB_KEY]: dbData }, () => {
+              cookieCategoryMap = dbData.categories;
+              resolve(true);
+            });
+            return;
+          }
+        } catch (err) {
+          console.error("Failed to fetch cookie database:", err);
+        }
+      }
+      
+      if (dbData && dbData.categories) {
+        cookieCategoryMap = dbData.categories;
+      }
+      resolve(false);
+    });
+  });
+}
+
+function parseCookieDatabase(csvText, timestamp) {
+  const lines = csvText.split("\n");
+  const categories = {};
+  
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    
+    const parts = line.split(",");
+    if (parts.length >= 3) {
+      const cookieName = parts[2].trim().replace(/^"|"$/g, "");
+      const category = parts[1].trim().replace(/^"|"$/g, "");
+      if (cookieName && category) {
+        categories[cookieName.toLowerCase()] = category.toLowerCase();
+      }
     }
   }
+  
+  return {
+    categories,
+    lastUpdated: timestamp
+  };
+}
+
+function getCookieCategory(name) {
+  const lowerName = name.toLowerCase();
+  return cookieCategoryMap[lowerName] || null;
+}
+
+function isLargeCookie(value) {
+  return value && value.length > LARGE_COOKIE_THRESHOLD;
+}
+
+function isAuthPattern(name) {
+  const authPatterns = /auth|sess|token|jwt|sid|id|ticket|login/i;
+  return authPatterns.test(name);
+}
+
+function evaluateUnknownCookie(cookie) {
+  if (!cookie.httpOnly) return false;
+  if (isAuthPattern(cookie.name)) return true;
   return false;
 }
 
-function isTrackingCookie(name) {
-  const lowerName = name.toLowerCase();
-  for (const pattern of trackingCookiePatterns) {
-    if (lowerName.startsWith(pattern.toLowerCase())) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function isRecommendedCookie(name) {
-  if (isEssentialCookie(name)) return true;
-  if (isTrackingCookie(name)) return false;
-  if (name.toLowerCase().includes("session")) return true;
-  if (name.startsWith("__cf")) return true;
-  if (name.startsWith("Optanon")) return true;
-  if (name.toLowerCase().includes("remember")) return true;
-  if (name.toLowerCase().includes("xsrf") || name.toLowerCase().includes("csrf")) return true;
-  return true;
+function isRecommendedCookie(cookie) {
+  if (isLargeCookie(cookie.value)) return false;
+  
+  if (!cookie.expirationDate) return true;
+  
+  const category = getCookieCategory(cookie.name);
+  
+  if (category === "security" || category === "functional") return true;
+  
+  if (category === "analytics" || category === "marketing") return false;
+  
+  return evaluateUnknownCookie(cookie);
 }
 
 async function init() {
@@ -324,14 +294,31 @@ async function loadCookies() {
   if (!currentTabUrl) return;
 
   try {
+    await fetchCookieDatabase();
+
     const urlObj = new URL(currentTabUrl);
     const hostname = urlObj.hostname;
 
+    let allCookies = [];
+
     const domainCookies = await chrome.cookies.getAll({ domain: hostname });
-    cookies = domainCookies;
+    allCookies = allCookies.concat(domainCookies);
+
+    const parts = hostname.split(".");
+    if (parts.length >= 3) {
+      const parentDomain = "." + parts.slice(-2).join(".");
+      const parentCookies = await chrome.cookies.getAll({ domain: parentDomain });
+      for (const pc of parentCookies) {
+        if (!allCookies.some((ec) => ec.name === pc.name && ec.domain === pc.domain)) {
+          allCookies.push(pc);
+        }
+      }
+    }
+
+    cookies = allCookies;
     
     cookies.forEach((cookie, index) => {
-      if (isRecommendedCookie(cookie.name) && !selectedCookies.has(index)) {
+      if (isRecommendedCookie(cookie) && !selectedCookies.has(index)) {
         selectedCookies.add(index);
       }
     });
@@ -359,13 +346,13 @@ function renderCookies() {
     row.className = "cookie-row";
 
     const isSelected = selectedCookies.has(index);
-    const isRecommended = isRecommendedCookie(cookie.name);
-    const isTracking = isTrackingCookie(cookie.name);
+    const isRec = isRecommendedCookie(cookie);
+    const isLarge = isLargeCookie(cookie.value);
 
     let nameClass = "cookie-name";
-    if (isTracking) {
-      nameClass += " cookie-name-tracking";
-    } else if (isRecommended) {
+    if (isLarge) {
+      nameClass += " cookie-name-large";
+    } else if (isRec) {
       nameClass += " cookie-name-recommended";
     }
 
