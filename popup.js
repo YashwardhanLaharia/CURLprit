@@ -250,8 +250,6 @@ function setupEventListeners() {
 
   elements.searchInput.addEventListener("input", (e) => {
     searchQuery = e.target.value;
-    selectedRequests.clear();
-    elements.selectAllCheckbox.checked = false;
     renderRequests();
   });
 
@@ -276,8 +274,6 @@ function setupEventListeners() {
       elements.filterTabs.forEach((t) => t.classList.remove("active"));
       tab.classList.add("active");
       currentFilter = tab.dataset.filter;
-      selectedRequests.clear();
-      elements.selectAllCheckbox.checked = false;
       
       if (currentFilter === "cookies") {
         elements.requestsList.classList.add("hidden");
@@ -334,9 +330,8 @@ async function loadCookies() {
     const domainCookies = await chrome.cookies.getAll({ domain: hostname });
     cookies = domainCookies;
     
-    selectedCookies.clear();
     cookies.forEach((cookie, index) => {
-      if (isRecommendedCookie(cookie.name)) {
+      if (isRecommendedCookie(cookie.name) && !selectedCookies.has(index)) {
         selectedCookies.add(index);
       }
     });
@@ -631,7 +626,7 @@ function generateCurlForRequest(req, cookiesFromApi = "") {
       const lowerKey = key.toLowerCase();
       headersAdded.add(lowerKey);
 
-      if (lowerKey === "cookie" && value && !cookies) {
+      if (lowerKey === "cookie" && value && cookiesFromApi === undefined) {
         cookies = value;
       } else if (value) {
         cmd += ` -H "${escapeHeader(key)}: ${escapeHeader(value)}"`;
