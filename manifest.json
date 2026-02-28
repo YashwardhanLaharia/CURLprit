@@ -1,7 +1,7 @@
 {
-  "manifest_version": 1.0,
+  "manifest_version": 3,
   "name": "CURLprit",
-  "version": "1",
+  "version": "1.0",
   "description": "Converts in-session browser requests to curl commands, enabling bulk downloads of gated content (authorized only)",
   "permissions": [
     "debugger",
