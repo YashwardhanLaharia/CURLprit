@@ -1,6 +1,6 @@
 # CURLprit
 
-A Chrome extension that captures network requests and generates curl commands for authenticated downloads.
+A Chrome extension that captures network requests and generates curl commands for authenticated downloads, bypassing download restrictions.
 
 ![logo](images/full_logo.svg)
 ![ui](images/ui.png)
