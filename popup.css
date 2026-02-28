@@ -165,12 +165,14 @@ body {
   width: 50px;
 }
 
-.naming-input:focus, .naming-input-small:focus {
+.naming-input:focus,
+.naming-input-small:focus {
   outline: none;
   border-color: #2196f3;
 }
 
-.naming-input::placeholder, .naming-input-small::placeholder {
+.naming-input::placeholder,
+.naming-input-small::placeholder {
   color: #5f6368;
 }
 
@@ -193,8 +195,15 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 .request-count {
@@ -299,11 +308,25 @@ body {
   font-size: 10px;
 }
 
-.method-get { color: #4fc1ff; }
-.method-post { color: #49cba3; }
-.method-put { color: #ff9800; }
-.method-delete { color: #f44336; }
-.method-patch { color: #ab47bc; }
+.method-get {
+  color: #4fc1ff;
+}
+
+.method-post {
+  color: #49cba3;
+}
+
+.method-put {
+  color: #ff9800;
+}
+
+.method-delete {
+  color: #f44336;
+}
+
+.method-patch {
+  color: #ab47bc;
+}
 
 .name {
   overflow: hidden;
@@ -311,7 +334,8 @@ body {
   white-space: nowrap;
 }
 
-.col-type, .col-size {
+.col-type,
+.col-size {
   display: flex;
   align-items: center;
   color: #9aa0a6;

@@ -3,16 +3,8 @@
   "name": "CURLprit",
   "version": "1.0",
   "description": "Converts in-session browser requests to curl commands, enabling bulk downloads of gated content (authorized only)",
-  "permissions": [
-    "debugger",
-    "tabs",
-    "activeTab",
-    "storage",
-    "cookies"
-  ],
-  "host_permissions": [
-    "<all_urls>"
-  ],
+  "permissions": ["debugger", "tabs", "activeTab", "storage", "cookies"],
+  "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
   },

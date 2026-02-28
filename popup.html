@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CURLprit</title>
   <link rel="stylesheet" href="popup.css">
 </head>
+
 <body>
   <div class="toolbar">
     <div class="toolbar-left">
@@ -21,7 +23,7 @@
       <span id="requestCount" class="request-count">0 requests</span>
     </div>
   </div>
-  
+
   <div class="filter-tabs">
     <button class="filter-tab active" data-filter="all">All</button>
     <button class="filter-tab" data-filter="img">Images</button>
@@ -34,11 +36,11 @@
     <button class="filter-tab" data-filter="font">Font</button>
     <button class="filter-tab" data-filter="other">Other</button>
   </div>
-  
+
   <div class="search-bar">
     <input type="text" id="searchInput" placeholder="Search (use * for wildcard)...">
   </div>
-  
+
   <div class="naming-bar">
     <span class="naming-label">Ext:</span>
     <input type="text" id="fileExtension" class="naming-input" placeholder="jpg">
@@ -48,7 +50,7 @@
     <input type="number" id="startNumber" class="naming-input-small" value="1" min="1">
     <button id="resetNaming" class="toolbar-btn" title="Reset Counter">↺</button>
   </div>
-  
+
   <div class="header-row">
     <div class="col-checkbox">
       <input type="checkbox" id="selectAllCheckbox" title="Select/Deselect All">
@@ -57,7 +59,7 @@
     <div class="col-type">Type</div>
     <div class="col-size">Size</div>
   </div>
-  
+
   <div id="requestsList" class="requests-list"></div>
 
   <div id="curlModal" class="modal hidden">
@@ -77,4 +79,5 @@
 
   <script src="popup.js"></script>
 </body>
+
 </html>
