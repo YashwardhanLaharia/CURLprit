@@ -38,7 +38,7 @@ body {
 .header-logo {
   height: 50px;
   width: auto;
-  background: #ffffff;
+  /* background: #ffffff; */
   /* padding: 10px; */
   border-radius: 3px;
 }
