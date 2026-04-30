@@ -671,7 +671,7 @@ function generateCurlForRequest(req, cookiesFromApi = "") {
 
 function escapeHeader(value) {
   if (typeof value !== "string") return value;
-  return value.replace(/"/g, '\\"');
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
 function getFilenameFromUrl(url) {
