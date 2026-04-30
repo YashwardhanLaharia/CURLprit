@@ -28,7 +28,7 @@ CURLprit intercepts network requests from the active browser tab and converts th
 
 ## Usage
 
-1. Navigate to the page containing content to download
+1. Navigate to the page containing the restricted content to download
 2. Click the **Start** button to begin capturing requests
 3. Scroll/browse the page to load desired content
 4. Use filter tabs to narrow down request types
